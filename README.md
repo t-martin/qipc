@@ -1,2 +1,3 @@
 # qipc
-kdb+/q IPC connection handler
+[WIP] kdb+/q IPC connection handler
+
