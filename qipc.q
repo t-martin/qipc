@@ -36,6 +36,7 @@
 
 .z.ts:{.qipc.timer.check[]};
 \t 100
+//=======================
 
 // ====================== UTIL
 .qipc.obfs:{$[4=count ":"vs string x;":"sv 2#s;string x]}
@@ -109,7 +110,6 @@
   };
 
 .z.pc:{[x]
-  
   c:first select from 0!.qipc.conns where h=x;
   if[null c`h; :()];
   .qipc.onClose c
