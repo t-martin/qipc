@@ -45,8 +45,23 @@
 // ====================== CORE
 .qipc.init:{[hp;opts;onOpen;onClose]
   .qipc.log.info["Initialising connection to ",.qipc.obfs hp;`opts`onOpen`onClose!(opts;onOpen;onClose)];
-  `.qipc.conns upsert `hp`h`isOpen`attempts`opts`onOpen`onClose!(hp;0N;0b;0;opts;onOpen;onClose);
+  O:.qipc.fixParams[opts;onOpen;onClose];
+  `.qipc.conns upsert `hp`h`isOpen`attempts`opts`onOpen`onClose!(hp;0N;0b;0;O`opts;O`onOpen;O`onClose);
   .qipc.open[hp];
+  };
+
+.qipc.fixParams:{[opts;onOpen;onClose];
+  dopts:`maxAttempts`retryPeriod`die!(0W;0N;0b);
+  opts:dopts,opts;
+  dclose:`die`retry!00b;
+  onClose:$[not 99h=type onClose;dclose;dclose,onClose];
+  dopen:`local`remote!(()!();()!());
+  onOpen:$[not 99h=type onOpen;dopen;dopen,onOpen];
+  dlocal:`func`params!(::;());
+  onOpen:@[onOpen;`local;{$[not 99h=type y;x;x,y]}dlocal];
+  dremote:`func`params`async!(::;();1b);
+  onOpen:@[onOpen;`remote;{$[not 99h=type y;x;x,y]}dremote];
+  `opts`onOpen`onClose!(opts;onOpen;onClose)
   };
 
 .qipc.open:{[hp]
@@ -105,7 +120,7 @@
   if[not null lc`func;
     .qipc.log.info["Found function to run in ",obfshp,".onOpen.local.func";lc];
     p:P,lc`params;
-    @[value;(lc`func;p);{.qipc.log.error["Error running onOpen.loca.func";x]}];
+    @[value;(lc`func;p);{.qipc.log.error["Error running onOpen.local.func";x]}];
     ];
   };
 
@@ -117,8 +132,11 @@
 // ======================
 
 
+
 \
 .qipc.init[`::8055;`maxAttempts`retryPeriod`die!(3;10000;1b);`local`remote!(`func`params!({show `calledLocalFunc};()!());`func`params`async!({show x};`a`b!1 2;0b));`die`retry!01b]
-
-
-
+.qipc.init[`::8055;`maxAttempts`retryPeriod!(3;100);`local`remote!(`func`params!({show `calledLocalFunc};()!());`func`params`async!({show x};`a`b!1 2;0b));`die`retry!01b]
+.qipc.init[`::8055;`maxAttempts`retryPeriod!(3;100);``local!(`;`func`params!({show `calledLocalFunc};()!()));`die`retry!01b]
+.test.initSubs:{[x] show x}
+.qipc.init[`::8055;`maxAttempts`retryPeriod!(0W;10000);``local!(`;`func`params!(`.test.initSubs;()));()]
+.qipc.init[`::8055;`maxAttempts`retryPeriod!(0W;10000);``remote!(`;`func`params`async!({.u.sub[`table;()]};();1b));()];
